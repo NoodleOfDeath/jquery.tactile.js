@@ -1,0 +1,45 @@
+/**
+ *
+ */
+
+.modal iframe {
+	width: 100%;
+	margin: 0px;
+	padding: 0px;
+	overflow: auto;
+}
+
+.tactile {
+	
+}
+
+.draggable {
+	
+}
+
+.draggable-handle {
+	cursor: move;
+}
+
+.resizable {
+	
+}
+
+.resizable .resizable-handle {
+	
+}
+
+.resizable .generated-handle {
+	
+}
+
+.handle-container {
+
+}
+
+.handle-container .resizable-handle {
+	float: right;
+	transform: rotate(90deg);
+	padding: 5px;
+	cursor: nwse-resize;
+}
