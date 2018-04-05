@@ -52,11 +52,12 @@
 		    containerOrigin = null;
 		    containerDimens = null;
 		    
-			mousedownOriginDrag = null;
-			mousedownOffsetDrag = null;
+		    mousedownOriginDrag = null;
+		    mousedownOffsetDrag = null;
 			
-			mousedownOriginResize = null;
-			mousedownOffsetResize = null;
+		    mousedownOriginResize = null;
+		    mousedownOffsetResize = null;
+		    minOriginResize = {};
 			
 			adjustVisibility(container);
 			
@@ -110,28 +111,46 @@
 		var containerDimens = null;
 		
 		var containerMargin = config.containerMargin;
+		
+		var minWidth = config.minWidth;
+		var minHeight = config.minHeight;
+		
+		var onDragWillStart = config.onDragWillStart;
+		var onDragDidStart = config.onDragDidStart;
+		var onDrag = config.onDrag;
+		var onDragWillEnd = config.onDragWillEnd;
+		var onDragDidEnd = config.onDragDidEnd;
+		
+		var onResizeWillStart = config.onResizeWillStart;
+		var onResizeDidStart = config.onResizeDidStart;
+		var onResize = config.onResize;
+		var onResizeWillEnd = config.onResizeWillEnd;
+		var onResizeDidEnd = config.onResizeDidEnd;
+		
+		var container = config.container;
+		
+    	if (typeof container == 'string')
+    		container = $(this).find(container);
     	
+    	if (container == null)
+    		container = $(container);
+    	
+    	if (container.length == 0)
+    		container = $(this);
+	
+    	container.addClass("tactile");
+		
     	if (config.draggable != null) {
     		
     		var mousedownOriginDrag = null;
     		var mousedownOffsetDrag = null;
     		
-    		var container = config.draggable.container;
-    		var handle = config.draggable.handle;
-    		
-        	if (typeof container == 'string')
-        		container = $(this).find(container);
-        	
-        	if (container == null)
-        		container = $(container);
-        	
-        	if (container.length == 0)
-        		container = $(this);
-    	
     		container.addClass("draggable");
-	    	
-	    	if (typeof handle == 'string')
-	    		handle = container.find(handle);
+    		
+    		var handle = config.draggable.handle;
+        	
+        	if (typeof handle == 'string')
+        		handle = container.find(handle);
 	    	
 	    	if (handle == null)
 	    		handle = $(handle);
@@ -142,6 +161,7 @@
 	    	handle.addClass("draggable-handle");
 	    	
 	    	handle.off("mousedown.draggable").on("mousedown.draggable", function(e) {
+	    		if (typeof onDragWillStart == 'function') onDragWillStart(e);
 	    		disableSelection(document.body);
 	    		mousedownOriginDrag = {
 	    			left: e.clientX,
@@ -151,6 +171,7 @@
 	    			left: container.offset().left,
 	    			top: container.offset().top,
 	    		};
+	    		if (typeof onDragDidStart == 'function') onDragDidStart(e);
 	    	});
 	    	
 	    	$(document.body).off("mousemove.draggable").on("mousemove.draggable", function(e) {
@@ -165,11 +186,14 @@
 	    			left: containerOrigin.left + mousedownOffsetDrag.left,
 	    			top: containerOrigin.top + mousedownOffsetDrag.top,
 	    		});
+	    		if (typeof onDrag == 'function') onDrag(e);
 	    	});
 	    	
 	    	$(document.body).off("mouseup.draggable mouseleave.draggable").on("mouseup.draggable mouseleave.draggable", function(e) {
 	    		if (mousedownOriginDrag == null) return;
+	    		if (typeof onDragWillEnd == 'function') onDragWillEnd(e);
 	    		release(container);
+	    		if (typeof onDragDidEnd == 'function') onDragDidEnd(e);
 	    	});
 	    	
 	    	$(window).off('resize.draggable').on('resize.draggable', function(e) {
@@ -182,26 +206,11 @@
     		
     		var mousedownOriginResize = null;
     		var mousedownOffsetResize = null;
+    		var minOriginResize = {};
     		
-    		var container = config.resizable.container;
-    		
-    		var minWidth = config.resizable.minWidth;
-    		var minHeight = config.resizable.minHeight;
+    		container.addClass("resizable");
     		
     		var handle = config.resizable.handle;
-    		
-    		var onResize = config.onResize;
-    		
-    		if (typeof container == 'string')
-        		container = $(this).find(container);
-        	
-        	if (container == null)
-        		container = $(container);
-        	
-        	if (container.length == 0)
-        		container = $(this);
-    	
-    		container.addClass("resizable");
 	    	
 	    	if (typeof handle == 'string')
 	    		handle = container.find(handle);
@@ -212,11 +221,6 @@
 	    	handle.addClass("resize-handle");
 	    	
 	    	handle.off("mousedown.resizable").on("mousedown.resizable", function(e) {
-	    		disableSelection(document.body);
-	    		mousedownOriginResize = {
-	    			left: e.clientX,
-	    			top: e.clientY,
-	    		};
 	    		containerOrigin = {
 	    			left: container.offset().left,
 	    			top: container.offset().top,
@@ -225,6 +229,15 @@
 	    			width: container.outerWidth(),
 	    			height: container.outerHeight(),
 	    		};
+	    		mousedownOriginResize = {
+	    			left: e.clientX,
+	    			top: e.clientY,
+	    		};
+	    		var width = containerDimens.width;
+	    		var height = containerDimens.height;
+	    		if (typeof onResizeWillStart == 'function') onResizeWillStart(e, width, height);
+	    		disableSelection(document.body);
+	    		if (typeof onResizeDidStart == 'function') onResizeDidStart(e, width, height);
 	    	});
 	    	
 	    	$(document.body).off("mousemove.resizable").on("mousemove.resizable", function(e) {
@@ -241,25 +254,38 @@
 	    		var height = containerDimens.height + mousedownOffsetResize.top;
 	    		if (width >= (minWidth || 400) && container.offset().left + width < $(window).width() + $(document).scrollLeft()) {
 	    			dxleft = containerOrigin.left - (mousedownOffsetResize.left / 2);
-	    			container.width(width);
+	    			container.outerWidth(width);
 	    		} else {
-	    			width = (minWidth || 400);
+	    			if (minOriginResize.left == null) {
+	    				minOriginResize.left = containerOrigin.left - (mousedownOffsetResize.left / 2);
+	    			}
+	    			width = (minWidth || $(window).width() / 3);
+	    			dxleft = minOriginResize.left;
 	    		}
 	    		if (height >= (minHeight || 320) && container.offset().top + height < $(window).height() + $(document).scrollTop()) {
 	    			dxtop = containerOrigin.top - (mousedownOffsetResize.top / 2);
-	    			container.height(height);
+	    			container.outerHeight(height);
 	    		} else {
-	    			height = (minHeight || 320);
+	    			if (minOriginResize.top == null) {
+	    				minOriginResize.top = containerOrigin.top - (mousedownOffsetResize.top / 2);
+	    			}
+	    			height = (minHeight || $(window).width() / 3);
+	    			dxtop = minOriginResize.top;
 	    		}
 	    		container.offset({
 	    			left: dxleft,
 	    			top: dxtop,
 	    		});
-	    		if (typeof onResize == 'function') onResize(width, height);
+	    		if (typeof onResize == 'function') onResize(e, width, height);
 	    	});
 	    	
 	    	$(document.body).off("mouseup.resizable mouseleave.resizable").on("mouseup.resizable mouseleave.resizable", function(e) {
+	    		if (mousedownOriginResize == null) return;
+	    		var width = containerDimens.width;
+	    		var height = containerDimens.height;
+	    		if (typeof onResizeWillEnd == 'function') onResizeWillEnd(e, width, height);
 	    		release(container);
+	    		if (typeof onResizeDidEnd == 'function') onResizeDidEnd(e, width, height);
 	    	});
     		
     	}
