@@ -3,8 +3,9 @@
  */
  
 .tactile {
- 	border-top-left-radius: 5px;
- 	border-top-right-radius: 5px; 
+	border-radius: 5px;
+	box-shadow : 0 4px 4px rgba(0, 0, 0, .3);
+	border: 1px solid #000;
  }
  
 .tactile iframe {
@@ -40,14 +41,6 @@
 
 .tactile .modal-buttons {
 	margin-right: 10px;
-}
-
-.tactile {
-	
-}
-
-.draggable {
-	
 }
 
 .draggable-handle {
