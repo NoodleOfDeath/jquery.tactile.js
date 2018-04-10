@@ -33,7 +33,7 @@
 		
 		function enableMouseEvents(container, enable) {
 			if (enable == null) enable = true;
-			var attr = enable ? 'auto' : 'none';
+			var attr = enable ? 'all' : 'none';
 			$(container).css({
 				'pointer-events' : attr,
 			});
@@ -129,6 +129,13 @@
 		
 		var container = config.container;
 		
+		var mousedownOriginDrag = null;
+		var mousedownOffsetDrag = null;
+		
+		var mousedownOriginResize = null;
+		var mousedownOffsetResize = null;
+		var minOriginResize = {};
+		
     	if (typeof container == 'string')
     		container = $(this).find(container);
     	
@@ -141,9 +148,6 @@
     	container.addClass("tactile");
 		
     	if (config.draggable != null) {
-    		
-    		var mousedownOriginDrag = null;
-    		var mousedownOffsetDrag = null;
     		
     		container.addClass("draggable");
     		
@@ -176,8 +180,6 @@
 	    	
 	    	$(document.body).off("mousemove.draggable").on("mousemove.draggable", function(e) {
 	    		if (mousedownOriginDrag == null) return;
-	    		if (mousedownOffsetDrag == null)
-	    			disableMouseEvents(container);
 	    		mousedownOffsetDrag = {
 	    			left: e.clientX - mousedownOriginDrag.left,
 	    			top: e.clientY - mousedownOriginDrag.top,
@@ -203,10 +205,6 @@
     	}
     	
     	if (config.resizable != null) {
-    		
-    		var mousedownOriginResize = null;
-    		var mousedownOffsetResize = null;
-    		var minOriginResize = {};
     		
     		container.addClass("resizable");
     		
